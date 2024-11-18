@@ -1,0 +1,300 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voting DApp</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/web3@4.5.0/dist/web3.min.js"></script>
+    <style>
+        .party-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-around;
+            align-items: center;
+        }
+
+        .party-button {
+            margin: 10px;
+            padding: 10px 20px;
+            font-size: 16px;
+            border: 2px solid #ffffff00;
+            border-radius: 50px;
+            background-color: #f0f0f0;
+            cursor: pointer;
+        }
+
+        .party-a {
+            color: #ffffff;
+        }
+        table {
+            width: 80%;
+            margin: 20px auto;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 10px;
+            border: 1px solid #ccc;
+            text-align: center;
+        }
+
+        th {
+            background-color: #f0f0f0;
+        }
+
+        .party-row:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">Vote for Your Party</h1><!--<br>over Block-Chain &#127760;</h1>-->
+        <!-- 
+        <div class="party-container">
+            <button onclick="voteForParty('PartyA')" class="party-button party-a">Vote for Party A</button>
+            <button onclick="voteForParty('PartyB')" class="party-button party-b">Vote for Party B</button>
+            <button onclick="voteForParty('PartyC')" class="party-button party-c">Vote for Party C</button>
+            <button onclick="voteForParty('PartyD')" class="party-button party-d">Vote for Party D</button>
+        </div>
+
+         -->
+    <table border="1" style="margin-top: 20px;">
+        <tr>
+            <td align="center">Party Name</td>
+            <td align="center">Logo</td>
+            <td align="center">Button</td>
+        </tr>
+        <tr>
+            <td align="center">BJP</td>
+            <td align="center"><img src="https://i.pinimg.com/originals/71/eb/2c/71eb2cc75e9615acd590e8b8e3967707.png" style="height: 50px; width: 50px;"></td>
+            <td align="center"><button onclick="voteForParty('PartyA')" class="party-button party-a">Vote</button></td>
+        </tr>
+        <tr>
+            <td align="center">INC</td>
+            <td align="center"><img src="https://upload.wikimedia.org/wikipedia/commons/6/63/Indian_National_Congress_hand_logo.png" style="height: 50px; width: 50px;"></td>
+            <td align="center"><button onclick="voteForParty('PartyB')" class="party-button party-a">Vote</button></td>
+        </tr>
+        <tr>
+            <td align="center">AAP</td>
+            <td align="center"><img src="https://zeevector.com/wp-content/uploads/Aam-Aadmi-Party-Logo-PNG-Punjab.png" style="height: 50px; width: 50px;"></td>
+            <td align="center"><button onclick="voteForParty('PartyC')" class="party-button party-a">Vote</button></td>
+        </tr>
+        <tr>
+            <td align="center">CPI(M)</td>
+            <td align="center"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/af/Cpm_election_symbol.svg/1200px-Cpm_election_symbol.svg.png" style="height: 50px; width: 50px;"></td>
+            <td align="center"><button onclick="voteForParty('PartyD')" class="party-button party-a">Vote</button></td>
+        </tr>
+        <tr>
+            <td align="center">NOTA</td>
+            <td align="center">-</td>
+            <td align="center"><button class="party-button party-nota">Vote</button></td>
+        </tr>
+    </table>
+    <br>
+        
+        <button onclick="getTotalVotes()" class="total-votes-button">Get Total Votes</button>
+
+        <div class="voting-details">
+            <h2>Voting Details</h2>
+            <div id="partyVotes">
+                <!-- Display votes for each party here -->
+            </div>
+            <p>Total Votes: <span id="totalVotes">0</span></p>
+        </div>
+
+        <div class="copyright">
+            &copy; -- 2024/25
+        </div>
+    </div>
+
+    <div id="loading">
+        <div class="loading-spinner"></div>
+    </div>
+
+    <div id="notification" class="hidden">
+        <div class="notification-content"></div>
+    </div>
+
+    <script>
+        const web3 = new Web3(window.ethereum);
+        //const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+        //const account = accounts[0];
+        /*
+        if (window.ethereum) {
+            const web3 = new Web3(window.ethereum);
+        } else {
+            console.error('No Ethereum provider found. Please install MetaMask or use a compatible browser.');
+        }
+        */
+
+        // Contract ABI and address
+        const abi = [
+            {
+                "inputs": [],
+                "stateMutability": "nonpayable",
+                "type": "constructor"
+            },
+            {
+                "inputs": [
+                    {
+                        "internalType": "string",
+                        "name": "party",
+                        "type": "string"
+                    }
+                ],
+                "name": "voteForParty",
+                "outputs": [],
+                "stateMutability": "nonpayable",
+                "type": "function"
+            },
+            {
+                "inputs": [],
+                "name": "getTotalVotes",
+                "outputs": [
+                    {
+                        "internalType": "uint256",
+                        "name": "",
+                        "type": "uint256"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [
+                    {
+                        "internalType": "string",
+                        "name": "party",
+                        "type": "string"
+                    }
+                ],
+                "name": "getVotesForParty",
+                "outputs": [
+                    {
+                        "internalType": "uint256",
+                        "name": "",
+                        "type": "uint256"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [
+                    {
+                        "internalType": "uint256",
+                        "name": "",
+                        "type": "uint256"
+                    }
+                ],
+                "name": "parties",
+                "outputs": [
+                    {
+                        "internalType": "string",
+                        "name": "",
+                        "type": "string"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [
+                    {
+                        "internalType": "string",
+                        "name": "",
+                        "type": "string"
+                    }
+                ],
+                "name": "votes",
+                "outputs": [
+                    {
+                        "internalType": "uint256",
+                        "name": "",
+                        "type": "uint256"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            }
+        ];
+        const contractAddress = "0x72D34b63a98dbF74FAcc81DE81bf6C4E5f9DE111";
+
+        const contract = new web3.eth.Contract(abi, contractAddress);
+        //showLoading();
+        showSystemNotification("Hi from DAPP");
+        Notification.requestPermission();
+        async function voteForParty(party) {
+            console.log(`Voting for ${party}`);
+            try {
+                const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                const account = accounts[0];
+
+                showLoading();
+                await contract.methods.voteForParty(party).send({ from: account });
+                hideLoading();
+
+                showSystemNotification(`You voted for ${party}`);
+            } catch (error) {
+                hideLoading();
+                showSystemNotification('Error while voting:', error);
+                console.error(`Error while getting total votes: ${error.message}`);
+            }
+        }
+
+        async function getTotalVotes() {
+            console.log('Getting total votes');
+            try {
+                showLoading();
+                const totalVotes = await contract.methods.getTotalVotes().call();
+                hideLoading();
+
+                // Display total votes
+                document.getElementById('totalVotes').innerText = totalVotes;
+
+                // Display votes for each party
+                const parties = ["PartyA", "PartyB", "PartyC", "PartyD"];
+                const partyVotesDiv = document.getElementById('partyVotes');
+                partyVotesDiv.innerHTML = '';
+                parties.forEach(async (party) => {
+                    const votesForParty = await contract.methods.getVotesForParty(party).call();
+                    partyVotesDiv.innerHTML += `<span>[ ${party}: ${votesForParty} ]</span> `;
+                });
+
+                showSystemNotification('Voting details updated');
+            } catch (error) {
+                hideLoading();
+                console.error('Error while getting total votes:', error);
+
+                showSystemNotification(`Error while getting total votes: ${error.message}`);
+            }
+        }
+
+        function showLoading() {
+            const loadingElement = document.getElementById('loading');
+            loadingElement.style.display = 'block';
+        }
+
+        function hideLoading() {
+            const loadingElement = document.getElementById('loading');
+            loadingElement.style.display = 'none';
+        }
+
+        function showSystemNotification(message) {
+            if (Notification.permission === 'granted') {
+                new Notification(message);
+            } else if (Notification.permission !== 'denied') {
+                Notification.requestPermission().then(permission => {
+                    if (permission === 'granted') {
+                        new Notification(message);
+                    }
+                });
+            }
+        }
+
+    </script>
+</body>
+</html>
